@@ -78,7 +78,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
      * Max width for the camera preview to avoid performance and ram/cache issues.
      * TODO should be configurable by a settings-activity! (feature)
      */
-    private static final int MAX_CAMERA_PREVIEW_RESOLUTION_WIDTH = 1024;
+    private static final int MAX_CAMERA_PREVIEW_RESOLUTION_WIDTH = 3072;
 
     private MediaActionSound mSound = null;
 
