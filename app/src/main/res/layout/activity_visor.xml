@@ -25,7 +25,7 @@
         android:layout_margin="@dimen/button_margin_secondary"
         android:background="@drawable/button_flash_round_corners"
         android:contentDescription="@string/button_flash_description"
-        android:layout_below="@+id/button_zoom"
+        android:layout_above="@+id/button_zoom"
         android:layout_alignRight="@+id/button_zoom"
         android:layout_alignEnd="@+id/button_zoom"
         android:layout_alignParentRight="true"
@@ -86,7 +86,7 @@
         android:layout_margin="@dimen/button_margin_secondary"
         android:background="@drawable/button_color_round_corners"
         android:contentDescription="@string/button_color_description"
-        android:layout_above="@+id/button_zoom"
+        android:layout_below="@+id/button_zoom"
         android:layout_alignParentRight="true"
         android:elevation="8dp" />
 
