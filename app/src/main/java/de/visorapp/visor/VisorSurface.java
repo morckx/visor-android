@@ -21,6 +21,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -37,6 +38,7 @@ import de.visorapp.visor.filters.YellowBlueColorFilter;
 import de.visorapp.visor.threads.BitmapCreateThread;
 
 import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
 
 /**
  * Created by Christian Illies on 29.07.15.
@@ -51,7 +53,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
     /**
      * The maximum of steps until we will reach the maximum zoom level.
      */
-    private static final int mCameraZoomSteps = 4;
+    private static final int mCameraZoomSteps = 16;
 
     /**
      * The jpeg quality which will be rendered for each camera preview image.
@@ -295,10 +297,10 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
     /**
      * reference to the zoom button.
      * <p>
-     * We hide the zoom Button if zoom is not supported
+     * We hide the zoom slider if zoom is not supported
      * by the device camera.
      */
-    private View zoomButtonView;
+    private SeekBar zoomSlider;
     /**
      * reference to the flash button.
      * <p>
@@ -505,7 +507,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         if (parameters.isZoomSupported()) {
             mCameraMaxZoomLevel = parameters.getMaxZoom();
         } else {
-            getZoomButtonView().setVisibility(View.INVISIBLE);
+//            getZoomSlider().setVisibility(View.INVISIBLE);
         }
         Camera.Size size = getBestPreviewSize(parameters);
 
@@ -596,7 +598,10 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
             toggleCameraPreview();
         }
 
+        mCamera.getParameters().setFocusMode(FOCUS_MODE_AUTO);
+        mCamera.getParameters().setFocusMode(FOCUS_MODE_CONTINUOUS_VIDEO);
         autoFocusCamera();
+
 
         Log.d(TAG, "Thread done. Camera successfully started");
     }
@@ -671,10 +676,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void playActionSoundAutofocusComplete() {
-        MediaActionSound player = getMediaActionSound();
-        if (player == null) return;
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
-        player.play(MediaActionSound.FOCUS_COMPLETE);
+        return;
     }
 
     public void playActionSoundShutter() {
@@ -859,18 +861,16 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
     /**
      * @see .nextZoomLevel
      */
-    public void prevZoomLevel() {
-        final int steps = (mCameraMaxZoomLevel / (mCameraZoomSteps - 1));
-        final int modulo = (mCameraMaxZoomLevel % (mCameraZoomSteps - 1));
+    public void setZoomLevelPercent(int zoomLevelPercent) {
+        mCameraCurrentZoomLevel = (int) ((double) zoomLevelPercent * mCameraMaxZoomLevel / 100);
 
-        int prevLevel = mCameraCurrentZoomLevel - steps;
-
-        if (mCameraCurrentZoomLevel <= modulo) {
-            prevLevel = mCameraMaxZoomLevel;
+        if (mCameraCurrentZoomLevel > mCameraMaxZoomLevel) {
+            zoomLevelPercent = mCameraMaxZoomLevel;
         }
 
-        if (mState == STATE_PREVIEW)
-            setCameraZoomLevel(prevLevel);
+        if (mState == STATE_PREVIEW) {
+            setCameraZoomLevel(zoomLevelPercent);
+        }
     }
 
     /**
@@ -1025,16 +1025,16 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         mCamera.setParameters(parameters);
     }
 
-    public View getZoomButtonView() {
-        return zoomButtonView;
+    public SeekBar getZoomSlider() {
+        return zoomSlider;
     }
 
     public View getFlashButtonView() {
         return flashButtonView;
     }
 
-    public void setZoomButton(View zoomButton) {
-        this.zoomButtonView = zoomButton;
+    public void setZoomSlider(SeekBar zoomSlider) {
+        this.zoomSlider = zoomSlider;
     }
 
     public void setFlashButton(View flashButton) {
