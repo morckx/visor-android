@@ -3,7 +3,9 @@ package de.visorapp.visor
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.DropDownPreference
 import androidx.preference.PreferenceFragmentCompat
+
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -18,7 +20,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.getItemId()) {
+        when (item.itemId) {
             android.R.id.home -> {
                 super.onBackPressed()
                 return true
@@ -30,6 +32,21 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
+            initPreviewResolutionWidth()
         }
+
+        fun initPreviewResolutionWidth() {
+            val visorSurface = VisorSurface.getInstance()
+            val availablePreviewWidths: Array<CharSequence>? = visorSurface.availablePreviewWidths
+            val previewResolutionPreference = findPreference<DropDownPreference>(resources.getString(R.string.key_preference_preview_resolution))
+            if (previewResolutionPreference != null && availablePreviewWidths != null) {
+                previewResolutionPreference.entries = availablePreviewWidths
+                previewResolutionPreference.entryValues = availablePreviewWidths
+                val currentPreviewWidth = visorSurface.cameraPreviewWidth
+                val currentIndex = availablePreviewWidths.indexOf(Integer.toString(currentPreviewWidth))
+                previewResolutionPreference.setValueIndex(currentIndex)
+            }
+        }
+
     }
 }

@@ -28,5 +28,17 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/advanced_header"
+        app:icon="@drawable/ic_baseline_settings_applications_24">
+        <DropDownPreference
+            app:key="@string/key_preference_preview_resolution"
+            app:title="@string/preview_resolution_width"
+            app:entries="@array/preview_resolution_entries"
+            app:useSimpleSummaryProvider="true"
+            app:entryValues="@array/preview_resolution_entry_values"
+            app:defaultValue="3"
+        />
+    />
+    </PreferenceCategory>
 
 </PreferenceScreen>
