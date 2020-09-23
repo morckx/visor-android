@@ -24,6 +24,8 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import androidx.preference.PreferenceManager;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -81,6 +83,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
      * TODO should be configurable by a settings-activity! (feature)
      */
     private static final int MAX_CAMERA_PREVIEW_RESOLUTION_WIDTH = 3072;
+    private final SharedPreferences mSharedPreferences;
 
     private MediaActionSound mSound = null;
 
@@ -335,10 +338,10 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         mCameraMaxZoomLevel = 0;
         mCurrentColorFilterIndex = 0;
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(String.valueOf(R.string.visor_shared_preference_name), Context.MODE_PRIVATE);
-        mCameraCurrentZoomLevel = sharedPreferences.getInt(String.valueOf(R.string.key_preference_zoom_level), mCameraCurrentZoomLevel);
-        mCurrentColorFilterIndex = sharedPreferences.getInt(String.valueOf(R.string.key_preference_color_mode), mCurrentColorFilterIndex);
-        storedAutoFocusMode = sharedPreferences.getString(String.valueOf(R.string.key_preference_autofocus_mode), FOCUS_MODE_AUTO);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mCameraCurrentZoomLevel = mSharedPreferences.getInt(getResources().getString(R.string.key_preference_zoom_level), mCameraCurrentZoomLevel);
+        mCurrentColorFilterIndex = mSharedPreferences.getInt(getResources().getString(R.string.key_preference_color_mode), mCurrentColorFilterIndex);
+        storedAutoFocusMode = mSharedPreferences.getString(getResources().getString(R.string.key_preference_autofocus_mode), FOCUS_MODE_AUTO);
 
         mCameraFlashMode = false;
         mColorFilterPaint = new Paint();
@@ -350,7 +353,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         Point sizePoint = new Point();
 
         mDisplay.getSize(sizePoint);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             // getting a preciser value of the screen size to be more accurate.
             mDisplay.getRealSize(sizePoint);
         }
@@ -430,12 +433,11 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
 
-        SharedPreferences sharedPreferences = this.getContext().getSharedPreferences(String.valueOf(R.string.visor_shared_preference_name), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
 
-        editor.putInt(String.valueOf(R.string.key_preference_zoom_level), mCameraCurrentZoomLevel);
-        editor.putInt(String.valueOf(R.string.key_preference_color_mode), mCurrentColorFilterIndex);
-        editor.putString(String.valueOf(R.string.key_preference_autofocus_mode), currentFocusMode);
+        editor.putInt(getResources().getString(R.string.key_preference_zoom_level), mCameraCurrentZoomLevel);
+        editor.putInt(getResources().getString(R.string.key_preference_color_mode), mCurrentColorFilterIndex);
+        editor.putString(getResources().getString(R.string.key_preference_autofocus_mode), currentFocusMode);
 
         editor.apply();
 
@@ -586,7 +588,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         } else {
             setCameraZoomLevel(mCameraCurrentZoomLevel);
         }
-
+        setSZoomSliderLevelPercent(mCameraCurrentZoomLevel * 100 / mCameraMaxZoomLevel);
         if (mCurrentColorFilterIndex > 0) {
             mCurrentColorFilterIndex--;
             // decrease index because
@@ -601,7 +603,9 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         mCamera.getParameters().setFocusMode(FOCUS_MODE_AUTO);
         mCamera.getParameters().setFocusMode(FOCUS_MODE_CONTINUOUS_VIDEO);
         autoFocusCamera();
-
+        if (mSharedPreferences.getBoolean(getResources().getString(R.string.key_preference_auto_torch), false)) {
+            turnFlashlightOn();
+        }
 
         Log.d(TAG, "Thread done. Camera successfully started");
     }
@@ -676,14 +680,23 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void playActionSoundAutofocusComplete() {
-        return;
+        if (mSharedPreferences.getBoolean(getResources()
+                .getString(R.string.key_preference_autofocus_sound), false)) {
+            MediaActionSound player = getMediaActionSound();
+            if (player == null) return;
+            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
+            player.play(MediaActionSound.FOCUS_COMPLETE);
+        }
     }
 
     public void playActionSoundShutter() {
-        MediaActionSound player = getMediaActionSound();
-        if (player == null) return;
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
-        player.play(MediaActionSound.SHUTTER_CLICK);
+        if (mSharedPreferences.getBoolean(getResources()
+                .getString(R.string.key_preference_shutter_sound), false)) {
+            MediaActionSound player = getMediaActionSound();
+            if (player == null) return;
+            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
+            player.play(MediaActionSound.SHUTTER_CLICK);
+        }
     }
 
     /**
@@ -856,6 +869,10 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         if (mState == STATE_PREVIEW)
             setCameraZoomLevel(nextLevel);
+    }
+
+    public void setSZoomSliderLevelPercent(int zoomLevelPercent) {
+        zoomSlider.setProgress(zoomLevelPercent);
     }
 
     /**
