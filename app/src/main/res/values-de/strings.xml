@@ -30,5 +30,6 @@
     <string name="main_camera">Hauptkamera</string>
     <string name="selfie_camera">Selfie-Kamera</string>
     <string name="wide_or_other_camera">Weitwinkel- oder andere</string>
+    <string name="single_focus_mode">Einzelfokus-Modus</string>
 
 </resources>

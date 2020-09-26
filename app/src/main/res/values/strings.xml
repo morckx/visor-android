@@ -20,6 +20,7 @@
     <string name="key_preference_auto_torch" translatable="false">VisorAndroidKeyPreferenceAutoTorch</string>
     <string name="key_preference_preview_resolution" translatable="false">VisorAndroidKeyPreferencePreviewResolution</string>
     <string name="key_preference_camera_id" translatable="false">VisorAndroidKeyPreferenceCameraId</string>/>
+    <string name="key_preference_single_focus_mode" translatable="false">VisorAndroidKeyPreferenceTapToFocusMode</string>/>
 
 
     <!-- Preference Titles -->
@@ -42,4 +43,8 @@
     <string name="main_camera">Main camera</string>
     <string name="selfie_camera">Selfie camera</string>
     <string name="wide_or_other_camera">Wide or other</string>
+
+    <string name="single_focus_mode">Mode for tap to focus</string>
+    <string name="auto_focus_identifier" translatable="false">auto</string>
+    <string name="macro_focus_identifier" translatable="false">macro</string>
 </resources>

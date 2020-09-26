@@ -1,6 +1,8 @@
 package de.visorapp.visor
 
 import android.hardware.Camera
+import android.hardware.Camera.Parameters.FOCUS_MODE_AUTO
+import android.hardware.Camera.Parameters.FOCUS_MODE_MACRO
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Build
@@ -39,6 +41,24 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
             initPreviewResolutionWidth()
             initCameraChooser()
+            initSingleFocusModeChooser()
+        }
+
+        private fun initSingleFocusModeChooser() {
+            val visorSurface = VisorSurface.getInstance()
+            val cameraParameters: Camera.Parameters = VisorSurface.getInstance().cameraInstance.getParameters()
+            val focusModes = cameraParameters.supportedFocusModes
+            var entries: MutableList<CharSequence> = ArrayList()
+            arrayOf(FOCUS_MODE_AUTO, FOCUS_MODE_MACRO).forEach {
+                if (focusModes.contains(it)) {
+                    entries.add(it)
+                }
+            }
+            val singleFocusModePreference = findPreference<DropDownPreference>(resources.getString(R.string.key_preference_autofocus_mode))
+            if (singleFocusModePreference != null) {
+                singleFocusModePreference.entries = entries.toTypedArray()
+                singleFocusModePreference.setValueIndex( max(0, entries.indexOf(visorSurface.preferredSingleFocusMode)))
+            }
         }
 
         private fun initCameraChooser() {

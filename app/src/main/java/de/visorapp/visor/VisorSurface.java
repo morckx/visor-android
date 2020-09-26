@@ -42,6 +42,7 @@ import de.visorapp.visor.filters.YellowBlueColorFilter;
 import de.visorapp.visor.threads.BitmapCreateThread;
 
 import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_MACRO;
 
 /**
  * Created by Christian Illies on 29.07.15.
@@ -85,6 +86,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
      */
     private static final int MAX_INITIAL_PREVIEW_RESOLUTION_WIDTH = 1280;
     private final SharedPreferences mSharedPreferences;
+    private final String mPreferredSingleFocusMode;
 
     private MediaActionSound mSound = null;
 
@@ -345,6 +347,7 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mCameraCurrentZoomLevel = mSharedPreferences.getInt(getResources().getString(R.string.key_preference_zoom_level), mCameraCurrentZoomLevel);
         mCurrentColorFilterIndex = mSharedPreferences.getInt(getResources().getString(R.string.key_preference_color_mode), mCurrentColorFilterIndex);
+        mPreferredSingleFocusMode = mSharedPreferences.getString(getResources().getString(R.string.key_preference_single_focus_mode), FOCUS_MODE_AUTO);
         storedAutoFocusMode = mSharedPreferences.getString(getResources().getString(R.string.key_preference_autofocus_mode), FOCUS_MODE_AUTO);
 
         mCameraFlashMode = false;
@@ -604,7 +607,10 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         mState = STATE_PREVIEW;
 
-        if (!storedAutoFocusMode.equals(FOCUS_MODE_AUTO)) {
+        if (!storedAutoFocusMode.equals(FOCUS_MODE_AUTO) && !storedAutoFocusMode.equals(FOCUS_MODE_MACRO)) {
+            toggleAutoFocusMode();
+        } else {
+            toggleAutoFocusMode();
             toggleAutoFocusMode();
         }
 
@@ -797,14 +803,14 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
 
         String currentMode = cameraParameters.getFocusMode();
-        if (currentMode.equals(FOCUS_MODE_AUTO)) {
+        if (currentMode.equals(FOCUS_MODE_AUTO) || currentMode.equals(FOCUS_MODE_MACRO)) {
             Toast.makeText(VisorSurface.this.getContext(), R.string.text_autofocus_enabled, Toast.LENGTH_SHORT).show();
             cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             // make sure that no focusing is in progress or CONTINUOUS mode will not work
             mCamera.cancelAutoFocus();
         } else {
-            Toast.makeText(VisorSurface.this.getContext(), R.string.text_autofocus_disabled, Toast.LENGTH_SHORT).show();
-            cameraParameters.setFocusMode(FOCUS_MODE_AUTO);
+            Toast.makeText(VisorSurface.this.getContext(), getResources().getString(R.string.text_autofocus_disabled) +  "Mode: "+mPreferredSingleFocusMode, Toast.LENGTH_SHORT).show();
+            cameraParameters.setFocusMode(mPreferredSingleFocusMode);
         }
 
         mCamera.setParameters(cameraParameters);
@@ -1068,5 +1074,9 @@ public class VisorSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     public int getCameraPreviewWidth() {
         return mCameraPreviewWidth;
+    }
+
+    public CharSequence getPreferredSingleFocusMode() {
+        return mPreferredSingleFocusMode;
     }
 }
